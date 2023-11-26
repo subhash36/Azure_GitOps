@@ -52,7 +52,7 @@ stages:
                 displayName: 'Tag image'
                 inputs:
                   command: Tag image
-                  imageName: azuregitops
+                  imageName: azuregitops:1.0
                   includeLatestTag : true
               - task: Docker@2
                 displayName: Build and push an image to container registry
