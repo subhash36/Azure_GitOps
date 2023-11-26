@@ -4,6 +4,11 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  registryUsername: $(REGISTRY_USERNAME)  # Encrypted variable
+  registryPassword: $(REGISTRY_PASSWORD)  # Encrypted variable
+  registryUrl: 'docker.io/v1/'
+
 stages:
   - stage: BUILD_PUSH
     displayName: Build and push Stage
@@ -11,13 +16,10 @@ stages:
       - job: buildAndPush
         displayName: Build and push
         steps:
-          - task: PowerShell@2
-            displayName: Login to Docker registry
+          - task: Docker@2
             inputs:
-              script: |
-                $username = $(secureFile('dockercredentials.securefile'))
-                $password = $(secureFile('dockercredentials.securefile'))
-                docker login -u $username -p $password
+              containerRegistry: 'Docker_Registry'
+              command: 'login'
           - script: 
               docker build -t subhashchandra369/azuregitops:1.0 -f Azure-gitops/Dockerfile .
               docker push  docker push azuregitops:1.0
@@ -33,13 +35,10 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: PowerShell@2
-                  displayName: Login to Docker registry, Build and push the image
+                - task: Docker@2
                   inputs:
-                    script: |
-                      $username = $(secureFile('dockercredentials.securefile'))
-                      $password = $(secureFile('dockercredentials.securefile'))
-                      docker login -u $username -p $password
+                    containerRegistry: 'Docker_Registry'
+                    command: 'login'
                 - script: 
                     docker build -t subhashchandra369/azuregitops:2.0 -f Azure-gitops/Dockerfile .
                     docker push  docker push azuregitops:2.0
@@ -56,13 +55,10 @@ stages:
         runOnce:
           deploy:
             steps:
-              - task: PowerShell@2
-                displayName: Login to Docker registry, Build and push the image
+              - task: Docker@2
                 inputs:
-                  script: |
-                    $username = $(secureFile('dockercredentials.securefile'))
-                    $password = $(secureFile('dockercredentials.securefile'))
-                    docker login -u $username -p $password
+                  containerRegistry: 'Docker_Registry'
+                  command: 'login'
               - script: 
                   docker build -t subhashchandra369/azuregitops:3.0 -f Azure-gitops/Dockerfile .
                   docker push  docker push azuregitops:3.0
@@ -93,13 +89,11 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: PowerShell@2
+                - task: Docker@2
                   displayName: Login to Docker registry, Build and push the image
                   inputs:
-                    script: |
-                      $username = $(secureFile('dockercredentials.securefile'))
-                      $password = $(secureFile('dockercredentials.securefile'))
-                      docker login -u $username -p $password
+                    containerRegistry: 'Docker_Registry'
+                    command: 'login'
                 - script: |
                     docker tag azuregitops:1.0 subhashchandra369/azuregitops:4.0
                     docker push subhashchandra369/azuregitops:4.0
@@ -123,3 +117,4 @@ stages:
             
                     # Push changes to remote repository
                     git push origin HEAD:master 
+
