@@ -52,10 +52,8 @@ stages:
                 displayName: 'Tag image'
                 inputs:
                   command: Tag image
-                  includeSourceTags: true
                   imageName: azuregitops
-                  includeLatestTag: true
-                  azureContainerRegistry: $(dockerRegistryServiceConnection)
+                  includeLatestTag : true
               - task: Docker@2
                 displayName: Build and push an image to container registry
                 inputs:
