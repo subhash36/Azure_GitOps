@@ -119,10 +119,3 @@ stages:
             
                     # Push changes to remote repository
                     git push origin HEAD:master 
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker_Registry'
-    repository: 'azuredevops'
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
