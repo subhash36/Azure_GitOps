@@ -20,8 +20,10 @@ stages:
             inputs:
               containerRegistry: 'Docker_Registry'
               command: 'login'
+              repository: 'azuredevops'
+              Dockerfile: '**/Dockerfile'
           - script: 
-              docker build -t subhashchandra369/azuregitops:1.0 -f Azure-gitops/Dockerfile .
+              docker build -t subhashchandra369/azuregitops:1.0 .
               docker push  docker push azuregitops:1.0
             
 
@@ -118,3 +120,9 @@ stages:
                     # Push changes to remote repository
                     git push origin HEAD:master 
 
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker_Registry'
+    repository: 'azuredevops'
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
