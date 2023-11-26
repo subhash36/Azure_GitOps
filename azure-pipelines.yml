@@ -1,0 +1,147 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '6d2929f6-2d6e-4184-8b9e-fc54a0b9cf14'
+  imageRepository: 'azuregitops'
+  containerRegistry: 'mycr07.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Azure-gitops/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          1.0
+
+- stage: DEV
+  displayName: DEV environment 
+  jobs:
+    - deployment: deploy
+      displayName: Pushing image from DEV environment
+      environment: DEV
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: Docker@1
+                displayName: 'Tag image'
+                inputs:
+                  command: Tag image
+                  includeSourceTags: true
+                  imageName: azuregitops
+                  includeLatestTag: true
+                  azureContainerRegistry: $(dockerRegistryServiceConnection)
+              - task: Docker@2
+                displayName: Build and push an image to container registry
+                inputs:
+                  command: Push
+                  repository: $(imageRepository)
+                  dockerfile: $(dockerfilePath)
+                  containerRegistry: $(dockerRegistryServiceConnection)
+                  tags: |
+                    2.0
+
+- stage: STAGING
+  displayName: STAGING environment
+  dependsOn:
+    - DEV
+  jobs:
+  - deployment: deploy
+    displayName: Pushing image from STAGIN environment
+    environment: STAGING
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - task: Docker@2
+              displayName: Login to Container Registry
+              inputs:
+                containerRegistry: 'Docker_Registry'
+                command: 'login'
+                repository: 'azuredevops'
+                Dockerfile: '**/Dockerfile' 
+            - script: |
+                docker tag azuregitops:2.0 subhashchandra369/azuregitops:3.0
+                docker push subhashchandra369/azuregitops:3.0
+
+- stage: PROD
+  displayName: PROD environment where GitOps happens
+  dependsOn:
+    - STAGING 
+  jobs:
+    - job: waitForValidation
+      displayName: Wait for external validation
+      pool: server
+      timeoutInMinutes: 4320 # job times out in 3 days
+      steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 1440 # task times out in 1 day
+        inputs:
+          notifyUsers: |
+            subhashchandrasc052
+          instructions: 'Please validate the build configuration and resume'
+          onTimeout: 'resume'
+
+    - deployment: deploy
+      displayName: Deploy to PROD
+      dependsOn: waitForValidation
+      environment: PROD
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: Docker@2
+                displayName: Login to Container Registry
+                inputs:
+                  containerRegistry: 'Docker_Registry'
+                  command: 'login'
+                  repository: 'azuredevops'
+                  Dockerfile: '**/Dockerfile' 
+              - script: |
+                  docker tag azuregitops:3.0 subhashchandra369/azuregitops:4.0
+                  docker push subhashchandra369/azuregitops:4.0
+                displayName: 'Pushing the image to PROD environment'
+              - script: |
+                  echo 'Updating Kubernetes deployment file...'
+                  # Set git user configuration
+                  git config --global user.email "subhashchandrasc052@gmail.com"
+                  git config --global user.name "subhash36"
+          
+                  # Replace placeholder with current build number
+                  IMAGE_TAG=4.0
+                  sed -i "s/replaceImageTag/$IMAGE_TAG/g" Azure_Gitops/test.yaml
+          
+                  # Add and commit changes
+                  git add Azure_Gitops/test.yaml
+                  git commit -m "Update deployment image to version $BUILD_NUMBER"
+
+                  # Modify the remote URL to point to the different repository
+                  git remote set-url origin https://github.com/subhash36/Azure_GitOps_Argo.git
+          
+                  # Push changes to remote repository
+                  git push origin HEAD:master 
