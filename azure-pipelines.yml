@@ -7,7 +7,11 @@ trigger:
 - master
 
 resources:
-- repo: self
+  repositories:
+  - repository: GitOpsRepo # The name used to reference this repository in the checkout step
+    type: github
+    endpoint: MyGitHubServiceConnection
+    name: subhash36/Azure_GitOps_Argo
 
 variables:
   # Container registry service connection established during pipeline creation
@@ -29,6 +33,7 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - checkout: self
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -47,6 +52,7 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - checkout: self
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -65,6 +71,7 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - checkout: self
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -75,32 +82,23 @@ stages:
         tags: |
           $(tag)
 
-  - job: UpdateK8SFile
-    displayName: 'Update Kubernetes Deployment File'
+  - job: UpdateK8SManifest
+    displayName: Checking into GitOps repo
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: $(vmImageName)
     steps:
-    - checkout: self
+    - checkout: GitOpsRepo
 
-    - script: |
-        echo 'Updating Kubernetes deployment file...'
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Docker Image Build Artifacts
+      inputs:
+        artifactName: 'azure-gitops'
+        downloadType: 'single'
+
+    - task: Bash@3
+      displayName: Update Kubernetes Deployment File
+      inputs:
+        script: |
+          sed -i 's/image:.*$/image: azure-gitops:$(tag)/' '$(Agent.BuildDirectory)/Azure_Gitops/test.yaml'
+          
         
-        # Set git user configuration
-        git config --global user.email "subhashchandrasc052@gmail.com"
-        git config --global user.name "subhash36"
-    
-        # Replace placeholder with current build number
-        BUILD_NUMBER=$(tag)
-        sed -i "s/replaceImageTag/$BUILD_NUMBER/g" Azure_Gitops/test.yaml
-    
-        # Add and commit changes
-        git add Azure_Gitops/test.yaml
-        git commit -m "Update deployment image to version $BUILD_NUMBER"
-
-        # Modify the remote URL to point to the different repository
-        git remote set-url origin https://github.com/subhash36/Azure_GitOps_Argo.git
-    
-        # Push changes to remote repository
-        git push origin HEAD:master
-      displayName: 'Update Kubernetes Deployment File'
-    
