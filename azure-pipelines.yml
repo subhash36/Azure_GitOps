@@ -51,23 +51,17 @@ stages:
         runOnce:
           deploy:
             steps:
-              - task: Docker@1
-                displayName: 'Tag image'
-                inputs:
-                  command: Tag image
-                  imageName: azuregitops:1.0
-                  includeLatestTag : true
-                  includeSourceTags: true
-                  workingDirectory: $(Build.SourcesDirectory)
               - task: Docker@2
                 displayName: Build and push an image to container registry
                 inputs:
-                  command: Push
+                  command: buildAndPush
                   repository: $(imageRepository)
                   dockerfile: $(dockerfilePath)
                   containerRegistry: $(dockerRegistryServiceConnection)
                   tags: |
                     2.0
+
+                  
 
 - stage: STAGING
   displayName: STAGING environment
