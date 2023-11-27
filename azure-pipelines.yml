@@ -103,7 +103,7 @@ stages:
       displayName: 'Commit and Push Changes'
       env:
         GH_TOKEN: $(gh.token)
-        GIT_USER_NAME: $(Build.RequestedFor)
+        GIT_USER_NAME: subhash36
         GIT_REPO_NAME: Azure_GitOps_Argo
 
        
