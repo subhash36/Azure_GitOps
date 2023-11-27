@@ -78,7 +78,7 @@ stages:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        buildContext: '$(Agent.BuildDirectory)/$(dockerfilePath)'
+        buildContext: '$(dockerfilePath)'
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
