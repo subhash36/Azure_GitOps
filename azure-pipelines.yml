@@ -78,7 +78,7 @@ stages:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        buildContext: '$(Agent.BuildDirectory)/Azure-gitops'
+        buildContext: '$(Agent.BuildDirectory)/$(dockerfilePath)'
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
