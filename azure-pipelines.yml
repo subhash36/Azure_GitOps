@@ -20,8 +20,8 @@ stages:
       steps:
       - task: Docker@2
         inputs:
-          containerRegistry: 'myCR07'
-          repository: 'azuredevops'
+          containerRegistry: 'Docker_Registry'
+          repository: 'azuregitops'
           command: 'buildAndPush'
           Dockerfile: '**/Dockerfile'
   
