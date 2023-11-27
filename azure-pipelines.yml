@@ -89,12 +89,6 @@ stages:
     steps:
     - checkout: GitOpsRepo
 
-    - task: DownloadBuildArtifacts@0
-      displayName: Download Docker Image Build Artifacts
-      inputs:
-        artifactName: 'azure-gitops'
-        downloadType: 'single'
-
     - task: Bash@3
       displayName: Update Kubernetes Deployment File
       inputs:
