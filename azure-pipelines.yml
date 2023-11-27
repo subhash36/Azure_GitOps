@@ -44,6 +44,8 @@ stages:
   jobs:
     - deployment: deploy
       displayName: Pushing image from DEV environment
+      pool:
+       vmImage: $(vmImageName)
       environment: DEV
       strategy:
         runOnce:
