@@ -10,7 +10,7 @@ resources:
   repositories:
   - repository: GitOpsRepo # The name used to reference this repository in the checkout step
     type: github
-    endpoint: MyGitHubServiceConnection
+    endpoint: GitHub_subhash36
     name: subhash36/Azure_GitOps_Argo
 
 variables:
@@ -100,5 +100,5 @@ stages:
       inputs:
         script: |
           sed -i 's/image:.*$/image: azure-gitops:$(tag)/' '$(Agent.BuildDirectory)/Azure_Gitops/test.yaml'
-          
+
         
