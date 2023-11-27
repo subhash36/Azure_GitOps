@@ -99,5 +99,5 @@ stages:
         git config user.name "subhash36"
         git add Azure_GitOps_Argo/Azure_Gitops/test.yaml
         git commit -m "Update image tag in K8s deploy file"
-        git push origin HEAD:master 
+        git push origin master 
       displayName: 'Commit and Push Changes'
