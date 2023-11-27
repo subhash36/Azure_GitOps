@@ -97,7 +97,7 @@ stages:
     - script: |
         git config user.email "subhashchandrasc052@gmail.com"
         git config user.name "subhash36"
-        git add Azure_GitOps_Argo/Azure_Gitops/test.yaml
+        git add Azure_Gitops/test.yaml
         git commit -m "Update image tag in K8s deploy file"
         git push https://${GH_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
       displayName: 'Commit and Push Changes'
