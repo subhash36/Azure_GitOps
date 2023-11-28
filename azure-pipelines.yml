@@ -67,7 +67,7 @@ stages:
         echo "Contents of dockerImage directory:"
         ls -l $(Pipeline.Workspace)/dockerImage
         echo "Attempting to load Docker image from TAR file..."
-        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar
+        docker load -i "$(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(ImageTag).tar"
         docker tag $(containerRegistry)/$(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(TAG)
         docker push $(containerRegistry)/$(imageRepository):$(TAG)
       displayName: 'Tag and Push'
