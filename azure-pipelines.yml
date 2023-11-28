@@ -50,9 +50,10 @@ stages:
           docker save $(imageRepository):$(ImageTag) -o $(Pipeline)/MY_IMAGE_FILE.tar
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)/MY_IMAGE_FILE.tar'
-        artifact: 'dockerImage'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: 'my-image'
         publishLocation: 'pipeline'
+
 
 - stage: STAGING
   displayName: STAGING Environment
@@ -65,16 +66,17 @@ stages:
     steps:
     - checkout: self
     - task: DownloadPipelineArtifact@2
+      displayName: 'Download Docker Image'
       inputs:
-        buildType: 'current'
-        artifactName: 'dockerImage'
-        targetPath: '$(Pipeline.Workspace)'
+        buildType: current
+        artifactName: 'my-image'
+        path: '$(Pipeline.Workspace)'
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input $(Pipeline.Workspace)/MY_IMAGE_FILE.tar
+          docker load --input $(Pipeline.Workspace)/dockerImage/$(imageRepository):$(tag).tar
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
