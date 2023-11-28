@@ -47,11 +47,11 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          docker save $(imageRepository):$(tag) -o $(Pipeline.Workspace)/MY_IMAGE_FILE.tar
+          docker save $(imageRepository):$(ImageTag) -o $(Pipeline)/MY_IMAGE_FILE.tar
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/MY_IMAGE_FILE.tar'
-        artifact: 'MY_ARTIFACT'
+        artifact: 'dockerImage'
         publishLocation: 'pipeline'
 
 - stage: STAGING
@@ -67,7 +67,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'current'
-        artifactName: 'MY_ARTIFACT'
+        artifactName: 'dockerImage'
         targetPath: '$(Pipeline.Workspace)'
     - task: Bash@3
       displayName: Load Docker Image
