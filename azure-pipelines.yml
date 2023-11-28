@@ -72,7 +72,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input "$(System.ArtifactsDirectory)/dockerImage/$(imageRepository):$(ImageTag).tar"
+          docker load --input "$(System.ArtifactsDirectory)/a/dockerImage/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
