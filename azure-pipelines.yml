@@ -18,6 +18,7 @@ variables:
   imageRepository: 'azuregitops'
   containerRegistry: 'mycr07.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Azure-gitops/Dockerfile'
+  ImageTag: 'latest'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
@@ -40,7 +41,7 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(tag)
+          $(ImageTag)
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -62,8 +63,8 @@ stages:
 
     - script: |
         TAG=$(Build.SourceBranchName)_$(tag)
-        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(tag).tar
-        docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):$(TAG)
+        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(ImageTag).tar
+        docker tag $(containerRegistry)/$(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(TAG)
         docker push $(containerRegistry)/$(imageRepository):$(TAG)
       displayName: 'Tag and Push'
 
