@@ -63,9 +63,9 @@ stages:
 
     - script: |
         TAG=$(Build.SourceBranchName)_$(Build.BuildId)
-        ls -l $(Pipeline.Workspace)/dockerImage
+        ls -l $(Pipeline.Workspace)
         echo "Contents of dockerImage directory:"
-        ls -l $(Pipeline.Workspace)/dockerImage
+        ls -l $(Pipeline.Workspace)
         echo "Attempting to load Docker image from TAR file..."
         docker load -i $(Pipeline.Workspace)/dockerImage.tar
         docker tag $(containerRegistry)/$(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(TAG)
