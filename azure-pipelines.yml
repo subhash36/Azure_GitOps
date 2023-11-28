@@ -71,7 +71,7 @@ stages:
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
-        targetType: 'inline'
+        
         script: |      
           docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag)"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
