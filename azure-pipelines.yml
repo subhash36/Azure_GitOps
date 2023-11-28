@@ -36,17 +36,12 @@ stages:
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
-        command: build
+        command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Pipeline.Workspace)'
-        artifact: 'dockerImage'
-        publishLocation: 'pipeline'
 
 - stage: STAGING
   displayName: STAGING Environment
@@ -58,35 +53,39 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - task: DownloadPipelineArtifact@2
+    - task: DockerCompose@0
       inputs:
-        buildType: 'current'
-        artifactName: 'dockerImage'
-        targetPath: '$(Pipeline.Workspace)'
+        containerregistrytype: 'Azure Container Registry'
+        azureSubscription: 'Free Trial(4a3413c5-7bb9-45e0-bd69-dcae65bd6b00)'
+        azureContainerRegistry: '{"loginServer":"mycr07.azurecr.io", "id" : "/subscriptions/4a3413c5-7bb9-45e0-bd69-dcae65bd6b00/resourceGroups/rg1/providers/Microsoft.ContainerRegistry/registries/myCR07"}'
+        dockerComposeFile: '**/docker-compose.yml'
+        action: 'Run a Docker Compose command'
+        dockerComposeCommand: 'pull'
+        arguments: 'myCR07.azurecr.io/azuregitops:latest'
 
-    - task: Bash@3
-      displayName: Load Docker Image
+    - task: Docker@1
       inputs:
-        targetType: 'inline'
-        script: |      
-          pwd
-          ls -l
-          echo "contents in workspace"
-          ls -l $(Pipeline.Workspace)
-          echo "Workspace ****************"
-          ls -l $(Pipeline.Workspace)/TestResults
-          echo " TestResults ****************"
-         
-          docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar"
-          docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
-    - task: Docker@2
-      displayName: push development tags
+        command: 'Tag image'
+        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'  # Specify your Docker registry service connection
+        imageName: 'azuregitops:$(ImageTag)'
+        tagMultipleImages: true
+        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'  # Specify the path to a file to store the tagged image names
+        qualifyImageName: true
+        includeSourceTags: false
+        includeLatestTag: false
+        addDefaultLabels: true
+        useDefaultContext: true
+        enforceDockerNamingConvention: true
+        arguments: '-t azuregitops:$(tag)'
+
+    - task: Docker@1
       inputs:
-        containerRegistry: $(dockerRegistryServiceConnection)
-        repository: $(imageRepository)
-        command: 'push'
-        tags: | 
-          $(tag)
+        command: 'Push an image'
+        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'  # Specify your Docker registry service connection
+        imageName: '$(Build.SourcesDirectory)/image-names.txt'  # Use the file containing the tagged image names
+        includeSourceTags: false
+        includeLatestTag: false
+
 
 - stage: PROD
   displayName: PROD Environment
