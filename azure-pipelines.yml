@@ -61,42 +61,21 @@ stages:
         command: pull
         arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
         
-    - script: |
-        echo "In Pipeline.workspace"
-        ls -l $(Pipeline.Workspace)
-        echo "________________"
-        echo "In Pipeline.workspace/s"
-        ls -l $(Pipeline.Workspace)/s
-        echo "s _______________"
-        ls -l $(Pipeline.Workspace)/a
-        echo "a _______________"
-        ls -l $(Pipeline.Workspace)/b
-        echo "b _______________"
-        ls -l $(Pipeline.Workspace)/TestResults
-        echo "________________"
-
-    - task: Docker@1
+    - task: Docker@2
+      displayName: Retag and Push Docker Image
       inputs:
-        command: 'Tag image'
-        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'  # Specify your Docker registry service connection
-        imageName: 'azuregitops:$(ImageTag)'
-        tagMultipleImages: true
-        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'  # Specify the path to a file to store the tagged image names
-        qualifyImageName: true
-        includeSourceTags: false
-        includeLatestTag: false
-        addDefaultLabels: true
-        useDefaultContext: true
-        enforceDockerNamingConvention: true
-        arguments: '-t azuregitops:$(tag)'
+        command: 'tag'
+        repository: $(imageRepository)
+        dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+        tags: '$(tag)'
 
-    - task: Docker@1
+    - task: Docker@2
+      displayName: Push Docker Image
       inputs:
-        command: 'Push an image'
-        dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'  # Specify your Docker registry service connection
-        imageName: '$(Build.SourcesDirectory)/image-names.txt'  # Use the file containing the tagged image names
-        includeSourceTags: false
-        includeLatestTag: false
+        command: 'push'
+        repository: $(imageRepository)
+        dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+        tags: '$(tag)'
 
 
 - stage: PROD
