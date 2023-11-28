@@ -42,10 +42,16 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
+    - task: Bash@3
+      displayName: Save Docker Image
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker save $(imageRepository):$(tag) -o $(Pipeline.Workspace)/MY_IMAGE_FILE.tar
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)'
-        artifact: 'dockerImage'
+        targetPath: '$(Pipeline.Workspace)/MY_IMAGE_FILE.tar'
+        artifact: 'MY_ARTIFACT'
         publishLocation: 'pipeline'
 
 - stage: STAGING
@@ -58,19 +64,26 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - download: current
-      artifact: 'dockerImage'
-
-    - script: |
-        TAG=$(Build.SourceBranchName)_$(Build.BuildId)
-        ls -l $(Pipeline.Workspace)/dockerImage
-        echo "Contents of dockerImage directory:"
-        ls -l $(Pipeline.Workspace)/dockerImage
-        echo "Attempting to load Docker image from TAR file..."
-        docker load -i "$(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(ImageTag).tar"
-        docker tag $(containerRegistry)/$(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(TAG)
-        docker push $(containerRegistry)/$(imageRepository):$(TAG)
-      displayName: 'Tag and Push'
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'MY_ARTIFACT'
+        targetPath: '$(Pipeline.Workspace)'
+    - task: Bash@3
+      displayName: Load Docker Image
+      inputs:
+        targetType: 'inline'
+        script: |      
+          docker load --input $(Pipeline.Workspace)/MY_IMAGE_FILE.tar
+          docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
+    - task: Docker@2
+      displayName: push development tags
+      inputs:
+        containerRegistry: 'MY_DOCKER_REGISTRY'
+        repository: 'MY_REPO/IMAGE'
+        command: 'push'
+        tags: | 
+          $(tag)
 
 - stage: PROD
   displayName: PROD Environment
