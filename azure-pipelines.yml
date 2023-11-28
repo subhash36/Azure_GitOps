@@ -44,11 +44,11 @@ stages:
           $(ImageTag)
    
     - script: |
-        echo "In PWD"
-        pwd
+        echo "contents in PWD"
+        ls -l
         echo "============"
         echo "In working dir"
-        ls -l $(Pipeline.Workspace)
+        ls -l $(Pipeline.Workspace)/s
         echo "============"
       displayName: file structure
 
