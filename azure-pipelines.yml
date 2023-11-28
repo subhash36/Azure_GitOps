@@ -41,7 +41,7 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(ImageTag)\
+          $(ImageTag)
     
     - task: Bash@3
       displayName: Save Docker Image
