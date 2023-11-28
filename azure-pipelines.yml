@@ -60,6 +60,10 @@ stages:
         azureContainerRegistry: $(containerRegistry)
         command: pull
         arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
+
+    - script: |
+        echo "azuregitops:$(tag)" > $(Build.SourcesDirectory)/image-names.txt
+      displayName: 'Generate image names file'
         
     - task: Docker@1
       inputs:
