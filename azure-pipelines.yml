@@ -71,7 +71,9 @@ stages:
         targetType: 'inline'
         script: |      
           echo "contents in workspace"
-          ls -l -$(Pipeline.Workspace)
+          ls -l $(Pipeline.Workspace)
+          echo "****************"
+          ls -l $(Pipeline.Workspace)/my-image
           echo "****************"
           docker load --input "$(Pipeline.Workspace)/my-image/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
