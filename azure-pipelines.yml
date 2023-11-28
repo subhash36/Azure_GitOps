@@ -60,13 +60,13 @@ stages:
         original_tag=$(Build.SourceBranchName) # Assuming the branch name is the original tag
         new_tag=$(date +'%Y%m%d%H%M%S')
         docker tag $(containerRegistry)/$(imageRepository):$(original_tag) $(containerRegistry)/$(imageRepository):$(new_tag)
-        
-        # Log in to Azure Container Registry
-        docker login -u $(dockerRegistryServiceConnection) -p $(dockerRegistryServiceConnection)
 
-        # Push the Docker image to the container registry
-        docker push $(containerRegistry)/$(imageRepository):$(tag)
-      displayName: 'Build and push an image to container registry'
+        # Log in to Azure Container Registry (ACR)
+        docker login $(containerRegistry) -u $(dockerRegistryServiceConnection) -p $(dockerRegistryServiceConnection)
+
+        # Push the Docker image to ACR with the new tag
+        docker push $(containerRegistry)/$(imageRepository):$(new_tag)
+      displayName: 'Tag and push image with a new tag to ACR'
 
 - stage: PROD
   displayName: PROD Environment
