@@ -36,27 +36,17 @@ stages:
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
-        command: buildAndPush
+        command: build
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
-   
-    - script: |
-
-        echo "In probably build artifact staging dir"
-        ls -l $(System.ArtifactsDirectory)
-        echo "============"
-
-      displayName: file structure
-
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/dockerImage'
+        targetPath: '$(Pipeline.Workspace)'
         artifact: 'dockerImage'
         publishLocation: 'pipeline'
-    
 
 - stage: STAGING
   displayName: STAGING Environment
