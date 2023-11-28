@@ -44,12 +44,13 @@ stages:
           $(ImageTag)
    
     - script: |
-        echo "contents in PWD"
-        ls -l
+
+        echo "In probably build artifact staging dir"
+        ls -l $(Pipeline.Workspace)/a
         echo "============"
-        echo "In working dir"
-        ls -l $(Pipeline.Workspace)/s
+        ls -l $(Pipeline.Workspace)/b
         echo "============"
+
       displayName: file structure
 
     - task: PublishPipelineArtifact@1
