@@ -63,7 +63,7 @@ stages:
 
     - script: |
         TAG=$(Build.SourceBranchName)_$(tag)
-        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(ImageTag).tar
+        docker load -i $(Pipeline.Workspace)/dockerImage.tar
         docker tag $(containerRegistry)/$(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(TAG)
         docker push $(containerRegistry)/$(imageRepository):$(TAG)
       displayName: 'Tag and Push'
