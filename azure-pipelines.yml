@@ -74,7 +74,7 @@ stages:
         imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'
         qualifyImageName: true
         includeSourceTags: false
-        includeLatestTag: true
+        includeLatestTag: false
         addDefaultLabels: true
         useDefaultContext: true
         enforceDockerNamingConvention: true
