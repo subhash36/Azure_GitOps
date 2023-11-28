@@ -45,7 +45,7 @@ stages:
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'dockerImage'
+        ArtifactName: 'my-image'
         publishLocation: 'Container'
         StoreAsTar: true
 
@@ -62,14 +62,9 @@ stages:
     - checkout: self
     - task: DownloadBuildArtifacts@1
       inputs:
-        buildType: 'specific'
-        project: '00f493e5-eff9-4948-967d-f46a04955bed'
-        pipeline: '16'
-        buildVersionToDownload: 'latest'
-        downloadType: 'single'
-        artifactName: 'dockerImage'
+        buildType: 'current'
+        downloadType: 'specific'
         downloadPath: '$(System.ArtifactsDirectory)'
-        cleanDestinationFolder: true
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
