@@ -42,6 +42,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
+
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -70,7 +71,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input $(Pipeline.Workspace)/dockerImage/my-image.tar
+          docker load --input $(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(ImageTag).tar
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
