@@ -67,6 +67,7 @@ stages:
         dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
         imageName: '$(imageRepository):$(ImageTag)'
         tagMultipleImages: true
+        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'
         qualifyImageName: true
         includeSourceTags: false
         includeLatestTag: true
