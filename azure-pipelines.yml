@@ -60,6 +60,14 @@ stages:
         azureContainerRegistry: $(containerRegistry)
         command: pull
         arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
+        
+    - script: |
+        echo "In Pipeline.workspace"
+        ls -l $(Pipeline.Workspace)
+        echo "________________"
+        echo "In Pipeline.workspace/s"
+        ls -l $(Pipeline.Workspace/s)
+        echo "________________"
 
     - task: Docker@1
       inputs:
