@@ -70,13 +70,12 @@ stages:
       inputs:
         targetType: 'inline'
         script: |      
+          pwd
           echo "contents in workspace"
           ls -l $(Pipeline.Workspace)
-          echo "****************"
-          ls -l $(Pipeline.Workspace)/s/TestResults
+          echo "Workspace ****************"
+          ls -l $(Pipeline.Workspace)/TestResults
           echo " TestResults ****************"
-          ls -l $(Pipeline.Workspace)/s/Azure-gitops
-          echo " Azure-gitops ****************"
          
           docker load --input "$(Pipeline.Workspace)/my-image/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
