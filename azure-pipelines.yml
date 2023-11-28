@@ -6,7 +6,11 @@ trigger:
 - master
 
 resources:
-- repo: self
+  repositories:
+  - repository: GitOpsRepo # The name used to reference your repository in the checkout step in PROD Environment -> Job = Update_K8S_Manifest
+    type: github
+    endpoint: GitHub_subhash36 # This is a service connection name. Please create one if you don't have by using PAT
+    name: subhash36/Azure_GitOps_Argo
 
 variables:
   # Container registry service connection established during pipeline creation
