@@ -4,36 +4,37 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- master
+  - master
 
+# We're using the 'resources' to specify our Repo from where the GitOps takes place
 resources:
   repositories:
-  - repository: GitOpsRepo # The name used to reference this repository in the checkout step
+  - repository: GitOpsRepo # The name used to reference your GitOps_Repo
     type: github
-    endpoint: GitHub_subhash36
-    name: subhash36/Azure_GitOps_Argo
+    endpoint: <Service_connection_Name> # This is a service connection name. Please create one if you don't have by using PAT
+    name: <github_username>/<k8s_manifest_repo>
 
-variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'e8cadd83-6ab8-468e-ae5c-6670ebb1fd0a'
-  imageRepository: 'azuregitops'
-  containerRegistry: 'mycr07.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/Azure-gitops/Dockerfile'
-  tag: '$(Build.BuildId)'
+variables: # This list is autofilled during pipeline creation.
+  # Container registry service connection established during pipeline creation.
+  dockerRegistryServiceConnection: '<Value is autofilled>'
+  imageRepository: 'any_image_name'
+  containerRegistry: '<ACR_name>.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/<Path to your Dockerfile in the application repo>'
+  tag: '$(Build.BuildId)' # This is a special variable that Azure Devops provides us for creating unique build numbers in each Stage automatically
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build
-  displayName: Build and push stage
+- stage: DEV
+  displayName: DEV Environment
   jobs:
-  - job: Build
-    displayName: Build
+  - job: Build_Push
+    displayName: Build_Push
     pool:
       vmImage: $(vmImageName)
     steps:
-    - checkout: self
+    - checkout: self # 'self' refers to your Application repo
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -45,10 +46,11 @@ stages:
           $(tag)
 
 - stage: STAGING
-  displayName: Build and push stage from STAGING
+  displayName: STAGING
+  dependsOn: DEV
   jobs:
-  - job: Build
-    displayName: Build
+  - job: Build_Push
+    displayName: Build_Push
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -56,7 +58,7 @@ stages:
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
-        command: buildAndPush
+        command: push
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
@@ -64,8 +66,11 @@ stages:
           $(tag)
 
 - stage: PROD
-  displayName: Build and push stage from PROD
+  displayName: PROD Environment
+  dependsOn: STAGING
   jobs:
+
+# Manual Approval Gate. You can find this Validation code in Azure Pipelines documentation
   - job: waitForValidation
     displayName: Wait for external validation
     pool: server
@@ -75,12 +80,16 @@ stages:
       timeoutInMinutes: 1440 # task times out in 1 day
       inputs:
         notifyUsers: |
-          subhashchandrasc052
+          user1
+          user2
+          user3
         instructions: 'Please validate the build configuration and resume'
-        onTimeout: 'resume'
+        onTimeout: 'reject' # Approval will be rejected if not approved within 1 day
 
-  - job: Build
-    displayName: Build
+# Build and push the Image with a 3rd image tag
+  - job: Build_Push
+    displayName: Build_Push
+    dependsOn: waitForValidation
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -88,7 +97,7 @@ stages:
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
-        command: buildAndPush
+        command: push
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         buildContext: '$(Build.Repository.LocalPath)'
@@ -96,27 +105,31 @@ stages:
         tags: |
           $(tag)
 
+# Update the K8S manifest files
   - job: UpdateK8SManifest
     displayName: Checking into GitOps repo
     pool:
       vmImage: $(vmImageName)
+    
+    # First checkout to the Repo where the K8S manifest files are present.
+    # The connection to that repo is mentioned in the Resouces section 
     steps:
     - checkout: GitOpsRepo
     - script: |
         BUILD_NUMBER=$(tag)
-        sed -i "s/replaceImageTag/$BUILD_NUMBER/g" Azure_Gitops/test.yaml
+        sed -i "s/replaceImageTag/$BUILD_NUMBER/g" <path to your deployment.yaml file>
       displayName: 'Update Image Tag in K8s Deploy File'
 
     - script: |
-        git config user.email "subhashchandrasc052@gmail.com"
-        git config user.name "subhash36"
-        git add Azure_Gitops/test.yaml
+        git config user.email "E-mailID of your github account"
+        git config user.name "user_name" 
+        git add <path to your deployment.yaml file>
         git commit -m "Update image tag in K8s deploy file"
         git push https://${GH_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
       displayName: 'Commit and Push Changes'
       env:
         GH_TOKEN: $(gh.token)
-        GIT_USER_NAME: subhash36
-        GIT_REPO_NAME: Azure_GitOps_Argo
+        GIT_USER_NAME: User_Name
+        GIT_REPO_NAME: GitOps_Repo_Name
 
        
