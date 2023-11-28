@@ -71,6 +71,7 @@ stages:
         targetType: 'inline'
         script: |      
           pwd
+          ls -l
           echo "contents in workspace"
           ls -l $(Pipeline.Workspace)
           echo "Workspace ****************"
