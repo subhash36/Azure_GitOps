@@ -42,19 +42,13 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
-    
-    - task: Bash@3
-      displayName: Save Docker Image
-      inputs:
-        targetType: 'inline'
-        script: |
-          docker save $(imageRepository):$(ImageTag) -o $(Pipeline.Workspace)/IMAGE_FILE.tar
 
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)'
         artifact: 'my-image'
         publishLocation: 'pipeline'
+    
 
 - stage: STAGING
   displayName: STAGING Environment
