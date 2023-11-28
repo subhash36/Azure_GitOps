@@ -46,9 +46,7 @@ stages:
     - script: |
 
         echo "In probably build artifact staging dir"
-        ls -l $(Pipeline.Workspace)/a
-        echo "============"
-        ls -l $(Pipeline.Workspace)/b
+        ls -l $(Build.ArtifactStagingDirectory)
         echo "============"
 
       displayName: file structure
