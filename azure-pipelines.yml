@@ -42,12 +42,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
-
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/my-image'
-        artifact: 'my-image'
-        publishLocation: 'pipeline'
+   
     - script: |
         echo "In PWD"
         pwd
@@ -55,6 +50,14 @@ stages:
         echo "In working dir"
         ls -l $(Pipeline.Workspace)
         echo "============"
+      displayName: file structure
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/dockerImage'
+        artifact: 'dockerImage'
+        publishLocation: 'pipeline'
+    
 
 - stage: STAGING
   displayName: STAGING Environment
@@ -69,7 +72,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'current'
-        artifactName: 'my-image'
+        artifactName: 'dockerImage'
         targetPath: '$(Pipeline.Workspace)'
 
     - task: Bash@3
@@ -85,7 +88,7 @@ stages:
           ls -l $(Pipeline.Workspace)/TestResults
           echo " TestResults ****************"
          
-          docker load --input "$(Pipeline.Workspace)/my-image/$(imageRepository):$(ImageTag).tar"
+          docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
