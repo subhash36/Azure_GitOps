@@ -39,34 +39,36 @@ stages:
       displayName: Build and push an image to container registry
       inputs:
         command: buildAndPush
+        buildContext: '$(Build.SourcesDirectory)'
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: 'dockerImage'
+        publishLocation: 'pipeline'
 
 - stage: STAGING
   displayName: STAGING
   dependsOn: DEV
   jobs:
-  - job: Build_Push
-    displayName: Build_Push
+  - job: Tag_Push
+    displayName: Tag & Push
     pool:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
+    - download: current
+      artifact: 'dockerImage'
     - script: |
-        # Tag the Docker image with a new tag
-        original_tag=$(Build.SourceBranchName) # Assuming the branch name is the original tag
-        new_tag=$(date +'%Y%m%d%H%M%S')
-        docker tag $(containerRegistry)/$(imageRepository):$(original_tag) $(containerRegistry)/$(imageRepository):$(new_tag)
-
-        # Log in to Azure Container Registry (ACR)
-        docker login $(containerRegistry) -u $(dockerRegistryServiceConnection) -p $(dockerRegistryServiceConnection)
-
-        # Push the Docker image to ACR with the new tag
-        docker push $(containerRegistry)/$(imageRepository):$(new_tag)
-      displayName: 'Tag and push image with a new tag to ACR'
+        TAG=$(Build.SourceBranchName)_$(tag)
+        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository).tar
+        docker tag $(containerRegistry)/$(imageRepository) your_registry/$(imageRepository):$(TAG)
+        docker push $(containerRegistry)/$(imageRepository):$(TAG)
+      displayName: 'Tag and Push'
 
 - stage: PROD
   displayName: PROD Environment
@@ -132,5 +134,4 @@ stages:
         GH_TOKEN: $(gh.token)
         GIT_USER_NAME: subhash36
         GIT_REPO_NAME: Azure_GitOps_Argo
-
         
