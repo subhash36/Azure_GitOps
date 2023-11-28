@@ -42,11 +42,12 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
-    - task: PublishPipelineArtifact@1
+    - task: PublishBuildArtifacts@1
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)'
-        artifact: 'my-image'
-        publishLocation: 'pipeline'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'dockerImage'
+        publishLocation: 'Container'
+        StoreAsTar: true
 
 
 - stage: STAGING
@@ -59,12 +60,16 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - task: DownloadPipelineArtifact@2
-      displayName: 'Download Docker Image'
+    - task: DownloadBuildArtifacts@1
       inputs:
-        buildType: current
-        artifactName: 'my-image'
-        path: '$(Pipeline.Workspace)'
+        buildType: 'specific'
+        project: '00f493e5-eff9-4948-967d-f46a04955bed'
+        pipeline: '16'
+        buildVersionToDownload: 'latest'
+        downloadType: 'single'
+        artifactName: 'dockerImage'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        cleanDestinationFolder: true
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
