@@ -64,7 +64,7 @@ stages:
     - task: Docker@1
       inputs:
         command: 'Tag image'
-        dockerRegistryEndpoint: 'dockerRegistryServiceConnection'  # Specify your Docker registry service connection
+        dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
         imageName: '$(imageRepository):$(ImageTag)'
         qualifyImageName: true
         includeSourceTags: true
