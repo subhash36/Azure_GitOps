@@ -66,9 +66,10 @@ stages:
         command: 'Tag image'
         dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
         imageName: '$(imageRepository):$(ImageTag)'
+        tagMultipleImages: true
         qualifyImageName: true
         includeSourceTags: false
-        includeLatestTag: false
+        includeLatestTag: true
         addDefaultLabels: true
         useDefaultContext: true
         enforceDockerNamingConvention: true
