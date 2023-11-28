@@ -79,8 +79,8 @@ stages:
     - task: Docker@2
       displayName: push development tags
       inputs:
-        containerRegistry: 'MY_DOCKER_REGISTRY'
-        repository: 'MY_REPO/IMAGE'
+        containerRegistry: $(dockerRegistryServiceConnection)
+        repository: $(imageRepository)
         command: 'push'
         tags: | 
           $(tag)
