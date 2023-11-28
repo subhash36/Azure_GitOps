@@ -45,7 +45,7 @@ stages:
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)'
+        targetPath: '$(Pipeline.Workspace)/my-image'
         artifact: 'my-image'
         publishLocation: 'pipeline'
     
