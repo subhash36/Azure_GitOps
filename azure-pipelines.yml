@@ -41,14 +41,20 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(ImageTag)
-
-    - task: PublishBuildArtifacts@1
+          $(ImageTag)\
+    
+    - task: Bash@3
+      displayName: Save Docker Image
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'my-image'
-        publishLocation: 'Container'
-        StoreAsTar: true
+        targetType: 'inline'
+        script: |
+          docker save $(imageRepository):$(ImageTag) -o $(Pipeline.Workspace)/IMAGE_FILE.tar
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)'
+        artifact: 'my-image'
+        publishLocation: 'pipeline'
 
 - stage: STAGING
   displayName: STAGING Environment
@@ -60,20 +66,17 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - task: DownloadBuildArtifacts@1
+    - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'current'
-        downloadType: 'single'
         artifactName: 'my-image'
-        downloadPath: '$(System.ArtifactsDirectory)'
-        cleanDestinationFolder: true
-        extractTars: true
+        targetPath: '$(Pipeline.Workspace)'
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input "$(System.ArtifactsDirectory)/my-image/$(imageRepository):$(ImageTag)"
+          docker load --input "$(Pipeline.Workspace)/my-image/$(imageRepository):$(ImageTag)"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
