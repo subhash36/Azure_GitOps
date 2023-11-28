@@ -46,7 +46,7 @@ stages:
     - script: |
 
         echo "In probably build artifact staging dir"
-        ls -l $(Build.ArtifactStagingDirectory)
+        ls -l $(System.ArtifactsDirectory)
         echo "============"
 
       displayName: file structure
