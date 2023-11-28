@@ -50,7 +50,6 @@ stages:
         publishLocation: 'Container'
         StoreAsTar: true
 
-
 - stage: STAGING
   displayName: STAGING Environment
   dependsOn: DEV
@@ -64,15 +63,17 @@ stages:
     - task: DownloadBuildArtifacts@1
       inputs:
         buildType: 'current'
-        downloadType: 'specific'
-        downloadPath: '$(Pipeline.Workspace)'
+        downloadType: 'single'
+        artifactName: 'my-image'
+        downloadPath: '$(System.ArtifactsDirectory)'
         cleanDestinationFolder: true
+        extractTars: true
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar"
+          docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag)"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
