@@ -73,8 +73,12 @@ stages:
           echo "contents in workspace"
           ls -l $(Pipeline.Workspace)
           echo "****************"
-          ls -l $(Pipeline.Workspace)/my-image
-          echo "****************"
+          ls -l $(Pipeline.Workspace)/a
+          echo " a ****************"
+          ls -l $(Pipeline.Workspace)/b
+          echo " b ****************"
+          ls -l $(Pipeline.Workspace)/s
+          echo " s ****************"
           docker load --input "$(Pipeline.Workspace)/my-image/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
