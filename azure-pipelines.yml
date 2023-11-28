@@ -65,14 +65,14 @@ stages:
       inputs:
         buildType: 'current'
         downloadType: 'specific'
-        downloadPath: '$(System.ArtifactsDirectory)'
+        downloadPath: '$(Pipeline.Workspace)'
         cleanDestinationFolder: true
     - task: Bash@3
       displayName: Load Docker Image
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input "$(System.ArtifactsDirectory)/a/dockerImage/$(imageRepository):$(ImageTag).tar"
+          docker load --input "$(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar"
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
