@@ -65,8 +65,8 @@ stages:
       artifact: 'dockerImage'
     - script: |
         TAG=$(Build.SourceBranchName)_$(tag)
-        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository).tar
-        docker tag $(containerRegistry)/$(imageRepository) your_registry/$(imageRepository):$(TAG)
+        docker load -i $(Pipeline.Workspace)/dockerImage/$(imageRepository)_$(tag).tar
+        docker tag $(containerRegistry)/$(imageRepository):$(tag) your_registry/$(imageRepository):$(TAG)
         docker push $(containerRegistry)/$(imageRepository):$(TAG)
       displayName: 'Tag and Push'
 
