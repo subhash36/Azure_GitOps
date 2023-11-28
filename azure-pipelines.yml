@@ -70,7 +70,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |      
-          docker load --input $(Pipeline.Workspace)/dockerImage/$(imageRepository):$(ImageTag).tar
+          docker load --input $(Pipeline.Workspace)/dockerImage/my-image.tar
           docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)
     - task: Docker@2
       displayName: push development tags
