@@ -54,25 +54,18 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - task: Docker@1
-      displayName: "docker pull from ACR"
+    - task: AzureCLI@2
       inputs:
-        azureSubscriptionEndpoint: 'myARM'
-        azureContainerRegistry: $(containerRegistry)
-        command: pull
-        arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
-
-    - task: Docker@1
-      displayName: 'Tag and push image'
-      inputs:
-        command: 'Tag image'
-        imageName: 'azuregitops:$(Build.BuildId)'
-        newTag: 'latest'
-        tagMultipleImages: false
-        qualifyImageName: true
-        dockerRegistryEndpoint: 'myCR07'
-        azureSubscriptionEndpoint: 'myARM'
-        azureContainerRegistry: '$(containerRegistry)'
+        azureSubscription: 'myARM'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az login
+          az acr login --name myCR07
+    - script: |
+        docker pull $(imageRepository)
+        docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
+        docker push $(containerRegistry)/$(imageRepository):$(tag)
 
 - stage: PROD
   displayName: PROD Environment
