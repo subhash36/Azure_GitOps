@@ -58,12 +58,13 @@ stages:
       inputs:
         containerRegistry: 'myCR07'
         command: 'login'
-    - task: Docker@2
-      displayName: 'Pull Docker Image from ACR'
+    - task: Docker@1
+      displayName: "docker pull from ACR"
       inputs:
-        command: 'pull'
-        repository: '$(containerRegistry)/$(imageRepository)'
-        tag: '$(ImageTag)'
+        azureSubscriptionEndpoint: 'myARM'
+        azureContainerRegistry: $(containerRegistry)
+        command: pull
+        arguments: '$(containerRegistry)/ $(imageRepository):$(ImageTag)'
  
       
     - script: |
