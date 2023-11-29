@@ -66,19 +66,16 @@ stages:
       displayName: 'Generate image names file'
         
     - task: Docker@1
+      displayName: 'Tag and push image'
       inputs:
-        command: 'Tag image'
-        dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
-        imageName: '$(imageRepository):$(ImageTag)'
-        tagMultipleImages: true
-        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'
+        command: 'Tag and push an image'
+        imageName: '$(Build.Repository.Name):$(Build.BuildId)'
+        newTag: 'my-new-tag'
+        pushMultipleImages: false
         qualifyImageName: true
-        includeSourceTags: true
-        includeLatestTag: true
-        addDefaultLabels: true
-        useDefaultContext: true
-        enforceDockerNamingConvention: true
-        arguments: '-t $(imageRepository):$(tag)'  # Specify the new tag here
+        dockerRegistryEndpoint: 'myCR07'
+        azureSubscriptionEndpoint: 'myARM'
+        azureContainerRegistry: '$(containerRegistry)'
 
 
     - task: Docker@2
