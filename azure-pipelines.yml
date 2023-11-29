@@ -68,14 +68,15 @@ stages:
     - task: Docker@1
       displayName: 'Tag and push image'
       inputs:
-        command: 'Tag and push an image'
-        imageName: '$(Build.Repository.Name):$(Build.BuildId)'
-        newTag: 'my-new-tag'
-        pushMultipleImages: false
+        command: 'Tag image'
+        imageName: '$(imageRepository):$(ImageTag)'
+        newTag: '$(tag)'
+        tagMultipleImages: false
         qualifyImageName: true
         dockerRegistryEndpoint: 'myCR07'
         azureSubscriptionEndpoint: 'myARM'
         azureContainerRegistry: '$(containerRegistry)'
+
 
 - stage: PROD
   displayName: PROD Environment
