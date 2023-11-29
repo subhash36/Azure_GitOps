@@ -55,19 +55,28 @@ stages:
     steps:
     - checkout: self
     
-    - task: Docker@1
-      displayName: "docker pull from ACR"
-      inputs:
-        azureSubscriptionEndpoint: 'myARM'
-        azureContainerRegistry: $(containerRegistry)
-        command: pull
-        arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
-
-      
     - script: |
-        docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
-      displayName: 'Tag Docker image'
-      workingDirectory: $(Agent.BuildDirectory)
+        # Log in to Azure using the service connection
+        az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+
+        # Set the correct subscription
+        az account set --subscription $(subscriptionId)
+
+        # Log in to the Azure Container Registry
+        az acr login --name $(containerRegistry)
+
+        docker pull $(containerRegistry)/$(imageRepository):$(ImgaeTag)
+        docker tag $(imageRepository):$(ImgaeTag) $(containerRegistry)/$(imageRepository):$(tag)
+        docker push $(imageRepository):$(tag)
+
+      displayName: 'Login to ACR'
+      env:
+        AZURE_SERVICE_PRINCIPAL_ID: $(servicePrincipalId)
+        AZURE_SERVICE_PRINCIPAL_KEY: $(servicePrincipalKey)
+        AZURE_TENANT_ID: $(tenantId)
+        AZURE_SUBSCRIPTION_ID: $(subscriptionId)
+   
+
 
 - stage: PROD
   displayName: PROD Environment
