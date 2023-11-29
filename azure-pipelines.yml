@@ -55,18 +55,14 @@ stages:
     steps:
     - checkout: self
     
-    - task: Docker@2
-      displayName: 'Pull Docker Image from ACR'
+    - task: Docker@1
+      displayName: "docker pull from ACR"
       inputs:
-        command: 'login'
-        containerRegistry: 'myCR07'
-    - task: Docker@2
-      displayName: 'Pull Docker Image from ACR'
-      inputs:
-        command: 'pull'
-        repository: '$(imageRepository)'
+        azureSubscriptionEndpoint: 'myARM'
+        azureContainerRegistry: $(containerRegistry)
+        command: pull
+        arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
 
- 
       
     - script: |
         echo "contents of the docker dir are"
