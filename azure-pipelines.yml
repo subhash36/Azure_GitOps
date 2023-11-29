@@ -59,7 +59,7 @@ stages:
       displayName: 'Pull Docker Image from ACR'
       inputs:
         command: 'login'
-        containerRegistry: '$(containerRegistry)'
+        containerRegistry: 'myCR07'
     - task: Docker@2
       displayName: 'Pull Docker Image from ACR'
       inputs:
