@@ -67,6 +67,7 @@ stages:
       inputs:
         command: 'Tag image'
         imageName: 'azuregitops:$(Build.BuildId)'
+        newTag: 'latest'
         tagMultipleImages: false
         qualifyImageName: true
         dockerRegistryEndpoint: 'myCR07'
