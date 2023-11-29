@@ -61,10 +61,11 @@ stages:
     
     - task: Docker@1
       inputs:
-        command: 'Pull image'
+        command: 'Pull'
         imageName: '$(containerRegistry)/$(imageRepository):$(ImageTag)'  # Replace with your Docker image details
         dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
-
+      displayName: Docker PULL
+      
     - script: |
         echo "contents of the docker dir are"
         ls -l /var/lib/docker
