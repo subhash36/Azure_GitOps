@@ -44,24 +44,24 @@ stages:
         tags: |
           $(ImageTag)
 
-- stage: STAGING
-  displayName: STAGING Environment
-  dependsOn: DEV
+- stage: ChangeAndPushImageTag
   jobs:
-  - job: Build_Push
-    displayName: Build_Push
-    pool:
-      vmImage: $(vmImageName)
+  - job: ChangeAndPushImageTagJob
     steps:
-    - checkout: self
     - task: Docker@2
+      displayName: Tag Docker Image
       inputs:
-        containerRegistry: 'myCR07'
-        command: 'login'
-    
-    - script: |
-        
-        az login
+        command: tag
+        sourceImage: 'myCR07/azuregitops:latest'
+        targetImage: 'myCR07/azuregitops:v1'
+
+    - task: Docker@2
+      displayName: Push Docker Image with New Tag
+      inputs:
+        command: push
+        containerRegistry: myCR07
+        repository: azuregitops
+        tags: v1
 
 
 - stage: PROD
