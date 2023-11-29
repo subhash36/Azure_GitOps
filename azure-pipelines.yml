@@ -65,8 +65,8 @@ stages:
 
       
     - script: |
-        source_image='/var/lib/docker/$(imageRepository):$(ImageTag)'
-        new_tag='/var/lib/docker/$(imageRepository):$(tag)'
+        source_image=$(imageRepository):$(ImageTag)'
+        new_tag=$(imageRepository):$(tag)'
 
         # Tag the Docker image
         docker tag $source_image $new_tag
