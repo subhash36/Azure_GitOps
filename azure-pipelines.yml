@@ -65,11 +65,7 @@ stages:
 
       
     - script: |
-        source_image=$(imageRepository):$(ImageTag)'
-        new_tag=$(imageRepository):$(tag)'
-
-        # Tag the Docker image
-        docker tag $source_image $new_tag
+        docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
       displayName: 'Tag Docker image'
       workingDirectory: $(Agent.BuildDirectory)
 
