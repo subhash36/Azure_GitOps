@@ -52,9 +52,9 @@ stages:
       displayName: Restart Docker Daemon
       inputs:
         command: runAndWait
-        args:
-          - 'docker'
-          - 'stop'
+        args: |
+           'docker'
+           'stop'
         containerRegistry: myCR07
         repository: azuregitops
         Dockerfile: '**/Dockerfile'
