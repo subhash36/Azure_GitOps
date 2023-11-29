@@ -48,11 +48,12 @@ stages:
   jobs:
   - job: ChangeAndPushImageTagJob
     steps:
+
     - task: Bash@3
-      displayName: Restart Docker Daemon
+      displayName: Clear Docker Image Cache
       inputs:
         targetType: inline
-        script: sudo service docker restart
+        script: docker system prune -a --force
 
     - task: Docker@2
       displayName: Tag Docker Image
