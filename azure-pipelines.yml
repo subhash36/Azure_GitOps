@@ -58,7 +58,7 @@ stages:
     - task: Docker@1
       displayName: "docker pull from ACR"
       inputs:
-        azureSubscriptionEndpoint: 'myCR07'
+        azureSubscriptionEndpoint: 'myARM'
         azureContainerRegistry: $(containerRegistry)
         command: pull
         arguments: '$(imageRepository):$(ImageTag)'
