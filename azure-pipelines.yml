@@ -70,7 +70,7 @@ stages:
       inputs:
         command: 'Tag image'
         imageName: '$(imageRepository):$(ImageTag)'
-        newTag: '$(tag)'
+        includeLatestTag: true
         tagMultipleImages: false
         qualifyImageName: true
         dockerRegistryEndpoint: 'myCR07'
