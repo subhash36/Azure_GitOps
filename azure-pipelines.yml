@@ -45,8 +45,8 @@ stages:
         tags: |
           $(tag)
 
-  - job: waitForValidation
-    displayName: Wait for external validation
+  - job: PR_from_DEV
+    displayName: PR_DEV
     pool: server
     timeoutInMinutes: 4320
     steps:
