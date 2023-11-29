@@ -39,6 +39,7 @@ stages:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
+        buildContext: '$(Build.SourcesDirectory)'
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(ImageTag)
@@ -69,16 +70,13 @@ stages:
       displayName: 'Tag and push image'
       inputs:
         command: 'Tag image'
-        imageName: '$(imageRepository):$(ImageTag)'
-        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'
-        includeSourceTags: true
-        includeLatestTag: true
+        imageName: 'azuregitops:latest'
+        newTag: '$(Build.BuildId)'
         tagMultipleImages: false
         qualifyImageName: true
         dockerRegistryEndpoint: 'myCR07'
         azureSubscriptionEndpoint: 'myARM'
         azureContainerRegistry: '$(containerRegistry)'
-
 
 - stage: PROD
   displayName: PROD Environment
