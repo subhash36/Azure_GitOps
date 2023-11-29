@@ -62,16 +62,11 @@ stages:
         command: pull
         arguments: '$(containerRegistry)/$(imageRepository):$(ImageTag)'
 
-    - script: |
-        echo "azuregitops:$(tag)" > $(Build.SourcesDirectory)/image-names.txt
-      displayName: 'Generate image names file'
-        
     - task: Docker@1
       displayName: 'Tag and push image'
       inputs:
         command: 'Tag image'
-        imageName: 'azuregitops:latest'
-        newTag: '$(Build.BuildId)'
+        imageName: 'azuregitops:$(Build.BuildId)'
         tagMultipleImages: false
         qualifyImageName: true
         dockerRegistryEndpoint: 'myCR07'
