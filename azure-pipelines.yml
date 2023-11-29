@@ -44,7 +44,7 @@ stages:
         tags: |
           $(ImageTag)
 
-- stage: ChangeAndPushImageTag
+- stage: STAGING
   jobs:
   - job: ChangeAndPushImageTagJob
     steps:
