@@ -65,7 +65,7 @@ stages:
       inputs:
         command: 'pull'
         repository: '$(imageRepository)'
-        tag: '$(ImageTag)'
+
  
       
     - script: |
