@@ -59,12 +59,14 @@ stages:
         containerRegistry: 'myCR07'
         command: 'login'
     
-    - task: Docker@1
+    - task: Docker@2
+      displayName: Pull Docker Image
       inputs:
-        command: 'Pull'
-        imageName: '$(containerRegistry)/$(imageRepository):$(ImageTag)'  # Replace with your Docker image details
-        dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
-      displayName: Docker PULL
+        command: 'pull'
+        repository: $(imageRepository)
+        dockerRegistryEndpoint: 'myCR07'
+        tags: '$(ImageTag)'
+
       
     - script: |
         echo "contents of the docker dir are"
