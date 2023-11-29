@@ -1,10 +1,12 @@
+
 # Docker
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- master
+  - master
 
+# We're using the 'resources' to specify our Repo from where the GitOps takes place
 resources:
   repositories:
   - repository: GitOpsRepo # The name used to reference your repository in the checkout step in PROD Environment -> Job = Update_K8S_Manifest
@@ -14,65 +16,100 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '69bff256-560b-4d6f-a4ba-23ac53d3044c'
+  dockerRegistryServiceConnection: 'e8cadd83-6ab8-468e-ae5c-6670ebb1fd0a'
   imageRepository: 'azuregitops'
   containerRegistry: 'mycr07.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Azure-gitops/Dockerfile'
-  ImageTag: 'latest'
-  tag: '$(Build.BuildId)'
+  tag: '$(Build.BuildId)' # This is a special variable that Azure Devops provides us for creating unique build numbers in each Stage automatically
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
 stages:
 - stage: DEV
-  displayName: Build and push stage
+  displayName: DEV Environment
   jobs:
-  - job: Build
-    displayName: Build
+  - job: Build_Push
+    displayName: Build_Push
     pool:
       vmImage: $(vmImageName)
     steps:
+    - checkout: self
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        buildContext: '$(Build.SourcesDirectory)'
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          $(ImageTag)
+          $(tag)
+
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320
+    steps:
+    - script: |
+        POST https://dev.azure.com/fabrikam/_apis/git/repositories/3411ebc1-d5aa-464f-9615-0b527bc66719/pullrequests?api-version=7.1-preview.1
+
+        {
+          "sourceRefName": "refs/heads/$(Build.SourceBranch)",
+          "targetRefName": "refs/heads/STAGING_branch", # Replace with your target branch (Your next branch to test in)
+          "title": "A new feature",
+          "description": "Adding a new feature",
+          "reviewers": [
+            {
+              "id": "reviewer_id"
+            }
+          ]
+        }
+
+      displayName: 'Automate PR Creation'
 
 - stage: STAGING
+  displayName: STAGING
+  dependsOn: DEV
   jobs:
-  - job: ChangeAndPushImageTagJob
+  - job: Build_Push
+    displayName: Build_Push
+    pool:
+      vmImage: $(vmImageName)
     steps:
-
-    - task: Bash@3
-      displayName: Clear Docker Image Cache
-      inputs:
-        targetType: inline
-        script: docker system prune -a --force
-
+    - checkout: self
     - task: Docker@2
-      displayName: Tag Docker Image
+      displayName: Build and push an image to container registry
       inputs:
-        command: tag
-        sourceImage: '$(imageRepository):$(ImageTag)'
-        targetImage: ' $(containerRegistry)/$(imageRepository):$(tag)'
-        arguments: |
-          $(imageRepository):$(ImageTag)
-          $(containerRegistry)/$(imageRepository):$(tag)
+        command: buildandpush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+    
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev') )
 
-    - task: Docker@2
-      displayName: Push Docker Image with New Tag
-      inputs:
-        command: push
-        containerRegistry: myCR07
-        repository: azuregitops
-        tags: v1
+    steps:
+    - script: |
+        POST https://dev.azure.com/fabrikam/_apis/git/repositories/3411ebc1-d5aa-464f-9615-0b527bc66719/pullrequests?api-version=7.1-preview.1
 
+        {
+          "sourceRefName": "refs/heads/$(Build.SourceBranch)",
+          "targetRefName": "refs/heads/target_branch", # Replace with your target branch
+          "title": "A new feature",
+          "description": "Adding a new feature",
+          "reviewers": [
+            {
+              "id": "reviewer_id"
+            }
+          ]
+        }
+
+      displayName: 'Automate PR Creation'
 
 - stage: PROD
   displayName: PROD Environment
@@ -117,26 +154,29 @@ stages:
     displayName: Checking into GitOps repo
     pool:
       vmImage: $(vmImageName)
-    
-    # First checkout to the Repo where the K8S manifest files are present.
-    # The connection to that repo is mentioned in the Resouces section 
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
     steps:
     - checkout: GitOpsRepo
     - script: |
         BUILD_NUMBER=$(tag)
-        sed -i "s/replaceImageTag/$BUILD_NUMBER/g" Azure_Gitops/test.yaml
+        if [ "$(Build.SourceBranch)" == "refs/heads/master" ]; then
+          sed -i "s/replaceImageTag/$BUILD_NUMBER/g" Azure_Gitops/test.yaml
+        elif [ "$(Build.SourceBranch)" == "refs/heads/staging" ]; then
+          sed -i "s/replaceImageTag/$BUILD_NUMBER/g" Azure_Gitops/staging.yaml
+        # Add conditions for other branches/environments as needed
+        fi
       displayName: 'Update Image Tag in K8s Deploy File'
 
     - script: |
         git config user.email "subhashchandrasc052@gmail.com"
         git config user.name "subhash36"
-        git add Azure_Gitops/test.yaml
+        git add Azure_Gitops/*.yaml
         git commit -m "Update image tag in K8s deploy file"
-        git push https://${GH_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+        git push https://${GH_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:$(Build.SourceBranch)
       displayName: 'Commit and Push Changes'
       env:
         GH_TOKEN: $(gh.token)
         GIT_USER_NAME: subhash36
         GIT_REPO_NAME: Azure_GitOps_Argo
-
-        
+          
