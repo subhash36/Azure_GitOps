@@ -48,8 +48,6 @@ stages:
   jobs:
   - job: ChangeAndPushImageTagJob
     steps:
-
-    steps:
     - task: Docker@2
       displayName: Restart Docker Daemon
       inputs:
