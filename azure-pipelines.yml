@@ -54,28 +54,27 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'myCR07'
+        command: 'login'
     
     - script: |
-        # Log in to Azure using the service connection
-        az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+        # Set the ACR login server name
+        ACR_LOGIN_SERVER=$(az acr show --name myCR07 --resource-group rg1 --query loginServer)
 
-        # Set the correct subscription
-        az account set --subscription $(subscriptionId)
+        # Get the service connection credentials for the ACR
+        ACR_SERVICE_CONNECTION_NAME=myCR07
+        ACR_SERVICE_CONNECTION_CREDENTIALS=$(az pipelines service connection show --name $ACR_SERVICE_CONNECTION_NAME --query accessToken)
 
-        # Log in to the Azure Container Registry
-        az acr login --name $(containerRegistry)
+        # Log in to the ACR
+        acr_login() {
+          echo "Logging in to ACR..."
+          docker login -u $ACR_LOGIN_SERVER -p $ACR_SERVICE_CONNECTION_CREDENTIALS $ACR_LOGIN_SERVER
+        }
 
-        docker pull $(containerRegistry)/$(imageRepository):$(ImgaeTag)
-        docker tag $(imageRepository):$(ImgaeTag) $(containerRegistry)/$(imageRepository):$(tag)
-        docker push $(imageRepository):$(tag)
-
-      displayName: 'Login to ACR'
-      env:
-        AZURE_SERVICE_PRINCIPAL_ID: $(servicePrincipalId)
-        AZURE_SERVICE_PRINCIPAL_KEY: $(servicePrincipalKey)
-        AZURE_TENANT_ID: $(tenantId)
-        AZURE_SUBSCRIPTION_ID: $(subscriptionId)
-   
+        # Call the acr_login function
+        acr_login
 
 
 - stage: PROD
