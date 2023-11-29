@@ -59,10 +59,16 @@ stages:
         containerRegistry: 'myCR07'
         command: 'login'
     
+    - task: Docker@1
+      inputs:
+        command: 'Pull image'
+        imageName: '$(containerRegistry)/$(imageRepository):$(ImageTag)'  # Replace with your Docker image details
+        dockerRegistryEndpoint: 'myCR07'  # Specify your Docker registry service connection
+
     - script: |
-        docker pull $(imageRepository)
-        docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
-        docker push $(containerRegistry)/$(imageRepository):$(tag)
+        echo "contents of the docker dir are"
+        ls -l /var/lib/docker
+        echo "----------------"
 
 - stage: PROD
   displayName: PROD Environment
