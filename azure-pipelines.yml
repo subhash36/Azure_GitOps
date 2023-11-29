@@ -48,6 +48,21 @@ stages:
   jobs:
   - job: ChangeAndPushImageTagJob
     steps:
+
+    steps:
+    - task: Docker@2
+      displayName: Restart Docker Daemon
+      inputs:
+        command: runAndWait
+        args:
+          - 'docker'
+          - 'stop'
+        containerRegistry: myCR07
+        repository: azuregitops
+        Dockerfile: '**/Dockerfile'
+        buildContext: .
+        tags: $(ImageTag)
+
     - task: Docker@2
       displayName: Tag Docker Image
       inputs:
