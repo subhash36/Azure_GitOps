@@ -54,10 +54,12 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'myCR07'
+        command: 'login'
     
     - script: |
-        docker login $(containerRegistry)
         docker pull $(imageRepository)
         docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
         docker push $(containerRegistry)/$(imageRepository):$(tag)
