@@ -65,9 +65,13 @@ stages:
 
       
     - script: |
-        echo "contents of the docker dir are"
-        ls -l /var/lib/docker
-        echo "----------------"
+        source_image='/var/lib/docker/$(imageRepository):$(ImageTag)'
+        new_tag='/var/lib/docker/$(imageRepository):$(tag)'
+
+        # Tag the Docker image
+        docker tag $source_image $new_tag
+      displayName: 'Tag Docker image'
+      workingDirectory: $(Agent.BuildDirectory)
 
 - stage: PROD
   displayName: PROD Environment
