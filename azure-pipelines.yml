@@ -54,15 +54,10 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'myARM'
-        scriptType: 'ps'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az login
-          az acr login --name myCR07
+
+    
     - script: |
+        docker login $(containerRegistry)
         docker pull $(imageRepository)
         docker tag $(imageRepository):$(ImageTag) $(containerRegistry)/$(imageRepository):$(tag)
         docker push $(containerRegistry)/$(imageRepository):$(tag)
