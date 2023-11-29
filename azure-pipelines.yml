@@ -60,21 +60,8 @@ stages:
         command: 'login'
     
     - script: |
-        # Set the ACR login server name
-        ACR_LOGIN_SERVER=$(az acr show --name myCR07 --resource-group rg1 --query loginServer)
-
-        # Get the service connection credentials for the ACR
-        ACR_SERVICE_CONNECTION_NAME=myCR07
-        ACR_SERVICE_CONNECTION_CREDENTIALS=$(az pipelines service connection show --name $ACR_SERVICE_CONNECTION_NAME --query accessToken)
-
-        # Log in to the ACR
-        acr_login() {
-          echo "Logging in to ACR..."
-          docker login -u $ACR_LOGIN_SERVER -p $ACR_SERVICE_CONNECTION_CREDENTIALS $ACR_LOGIN_SERVER
-        }
-
-        # Call the acr_login function
-        acr_login
+        
+        az login
 
 
 - stage: PROD
