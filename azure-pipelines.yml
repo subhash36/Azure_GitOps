@@ -70,6 +70,8 @@ stages:
       inputs:
         command: 'Tag image'
         imageName: '$(imageRepository):$(ImageTag)'
+        imageNamesPath: '$(Build.SourcesDirectory)/image-names.txt'
+        includeSourceTags: true
         includeLatestTag: true
         tagMultipleImages: false
         qualifyImageName: true
