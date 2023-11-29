@@ -58,15 +58,13 @@ stages:
       inputs:
         containerRegistry: 'myCR07'
         command: 'login'
-    
     - task: Docker@2
-      displayName: Pull Docker Image
+      displayName: 'Pull Docker Image from ACR'
       inputs:
         command: 'pull'
-        repository: $(imageRepository)
-        dockerRegistryEndpoint: 'myCR07'
-        tags: '$(ImageTag)'
-
+        repository: '$(containerRegistry)/$(imageRepository)'
+        tag: '$(ImageTag)'
+ 
       
     - script: |
         echo "contents of the docker dir are"
