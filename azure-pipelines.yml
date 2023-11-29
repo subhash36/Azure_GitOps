@@ -77,16 +77,6 @@ stages:
         azureSubscriptionEndpoint: 'myARM'
         azureContainerRegistry: '$(containerRegistry)'
 
-
-    - task: Docker@2
-      displayName: Push Docker Image
-      inputs:
-        command: 'push'
-        repository: $(imageRepository)
-        dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
-        tags: '$(tag)'
-
-
 - stage: PROD
   displayName: PROD Environment
   dependsOn: STAGING
