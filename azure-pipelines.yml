@@ -47,7 +47,6 @@ stages:
 
   - job: PR_from_DEV
     displayName: PR_DEV
-    pool: server
     timeoutInMinutes: 4320
     steps:
     - script: |
@@ -180,3 +179,4 @@ stages:
         GIT_USER_NAME: subhash36
         GIT_REPO_NAME: Azure_GitOps_Argo
           
+
